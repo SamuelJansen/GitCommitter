@@ -2,7 +2,7 @@ Globals:
   update-globals: False
   print-status: False
   api:
-    list: [Globals,GitCommitter,SeleniumHelper,SwaggerIntegrationTests,OfficeTrackIntegrationTests]
+    list: [GitCommitter,Courses,CourseEditor,CourseDesktop,Chess,Application]
     extension: gbl
     dependency:
       update: False
