@@ -10,8 +10,11 @@ class GitCommitter:
         # try :
             for api in self.globals.apiNames :
                 # process = subprocess.Popen('git')
-                process = subprocess.call(['git', 'add', '.'], shell=True, cwd='C:\\Users\\Samuel Jansen\\Projects\\GitCommiter')
-                time.sleep(20)
+                # process = subprocess.call(['git', 'add', '.'], shell=True, cwd='C:\\Users\\Samuel Jansen\\Projects\\GitCommiter')
+                # time.sleep(20)
+                subprocess.call('git add .', shell=True, cwd='C:\\Users\\Samuel Jansen\\Projects\\GitCommitter')
+                subprocess.call('git commit -m "commit message"', shell=True, cwd='C:\\Users\\Samuel Jansen\\Projects\\GitCommitter')
+                subprocess.call('git push', shell=True, cwd='C:\\Users\\Samuel Jansen\\Projects\\GitCommitter')
                 # process = subprocess.Popen(command)
                 # process.wait()
                 # process.kill()
