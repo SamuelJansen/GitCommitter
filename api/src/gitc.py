@@ -7,10 +7,10 @@ def handleSystemCommand(gitCommitter) :
     globals = gitCommitter.globals
 
     if len(sys.argv) <= gitCommitter._0_ or globals.GIT_COMMITTER not in sys.argv :
-        print(f'{globals.ERROR}Missing "git-commiter"')
+        print(f'{globals.ERROR}Missing "{globals.GIT_COMMITTER}"')
         return
     if len(sys.argv) < gitCommitter._2_ITS_RESERVED_FOR_COMMAND :
-        print(f'{globals.ERROR}Missing git-commiter command')
+        print(f'{globals.ERROR}Missing {globals.GIT_COMMITTER} command')
         return
 
     gitCommiterCallCommand = sys.argv[gitCommitter._1_ITS_RESERVED_FOR_GIT_COMMITTER]
