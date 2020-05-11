@@ -13,8 +13,9 @@ class GitCommitter:
     def __init__(self,globals):
 
         self.globals = globals
-        self._1_ITS_RESERVED_FOR_COMMAND = 1
-        self._2_ = 2
+        self._0_ = 0
+        self._1_ITS_RESERVED_FOR_GIT_COMMITTER = 1
+        self._2_ITS_RESERVED_FOR_COMMAND = 2
         self._3_ = 3
 
     def runCommandList(self,commandList):
@@ -30,7 +31,7 @@ class GitCommitter:
         self.runCommandList([Command.ADD_ALL])
 
     def commit(self):
-        commitMessage = sys.argv[self._2_]
+        commitMessage = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
         commandCommit = Command.COMMIT.replace(Command.COMMIT_MESSAGE_TOKEN,commitMessage)
         self.runCommandList([commandCommit])
 
@@ -38,7 +39,7 @@ class GitCommitter:
         self.runCommandList([Command.PUSH])
 
     def addAllCommitPush(self):
-        commitMessage = sys.argv[self._2_]
+        commitMessage = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
         commandCommit = Command.COMMIT.replace(Command.COMMIT_MESSAGE_TOKEN,commitMessage)
         self.runCommandList([
             Command.ADD_ALL,
@@ -47,7 +48,7 @@ class GitCommitter:
         ])
 
     def addEnvironmentVariable(self):
-        variableKey = sys.argv[self._2_]
+        variableKey = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
         variableValue = sys.argv[self._3_]
         globals = self.globals
         if variableKey == Command.KW_SELF :
