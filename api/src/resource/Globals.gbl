@@ -1,0 +1,8 @@
+Globals:
+  update-globals: False
+  print-status: False
+  api:
+    list: [Globals,GitCommitter,SeleniumHelper,SwaggerIntegrationTests,OfficeTrackIntegrationTests]
+    extension: gbl
+    dependency:
+      update: False
