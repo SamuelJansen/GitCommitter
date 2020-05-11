@@ -1,4 +1,4 @@
-import subprocess, time
+import os, subprocess, time
 
 class GitCommitter:
 
@@ -32,12 +32,20 @@ class GitCommitter:
             Command.PUSH
         ])
 
+    def addEnvironmentVariable(self,variableKey,variableValue):
+        globals = self.globals
+        if variableKey == Command.KW_SELF :
+            variableValue = f'{globals.localPath}{globals.apisRoot}{GitCommitter.__name__}{globals.BACK_SLASH}{globals.baseApiPath}'
+            print(variableValue)
+        os.environ[variableKey] = variableValue
+
 
 class Command:
-    GIT_KEYWORD = 'git'
+    KW_GIT = 'git'
+    KW_SELF = 'self'
 
     COMMIT_MESSAGE_TOKEN = '__COMMIT_MESSAGE_TOKEN__'
 
-    ADD_ALL = f'{GIT_KEYWORD} add .'
-    COMMIT = f'{GIT_KEYWORD} commit -m "{COMMIT_MESSAGE_TOKEN}"'
-    PUSH = f'{GIT_KEYWORD} push'
+    ADD_ALL = f'{KW_GIT} add .'
+    COMMIT = f'{KW_GIT} commit -m "{COMMIT_MESSAGE_TOKEN}"'
+    PUSH = f'{KW_GIT} push'
