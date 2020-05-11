@@ -1,5 +1,7 @@
 import os, sys, subprocess, time
 
+import gitc
+
 COMMAND_ADD_ALL = 'add-all'
 COMMAND_COMMIT = 'commit'
 COMMAND_PUSH = 'push'
@@ -52,6 +54,9 @@ class GitCommitter:
             variableValue = f'{globals.localPath}{globals.apisRoot}{GitCommitter.__name__}{globals.BACK_SLASH}{globals.baseApiPath}'
             print(variableValue)
         os.environ[variableKey] = variableValue
+
+    def handleSystemCommand(self):
+        gitc.handleSystemCommand(self)
 
 
 class Command:

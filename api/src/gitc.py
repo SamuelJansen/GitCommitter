@@ -1,12 +1,10 @@
-if __name__ == '__main__' :
-    from domain.control import Globals
-    globals = Globals.Globals(debugStatus = False)
+def handleSystemCommand(gitCommitter) :
 
     import sys
 
     import GitCommitter
 
-    gitCommitter = GitCommitter.GitCommitter(globals)
+    globals = gitCommitter.globals
     gitCommiterCallCommand = sys.argv[1]
     command = sys.argv[2]
 
@@ -26,3 +24,14 @@ if __name__ == '__main__' :
 
         else :
             print(f'{globals.ERROR}command not fount')
+
+
+if __name__ == '__main__' :
+    from domain.control import Globals
+    globals = Globals.Globals(debugStatus = False)
+
+    import GitCommitter
+
+    gitCommitter = GitCommitter.GitCommitter(globals)
+
+    handleSystemCommand(gitCommitter)
