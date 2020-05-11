@@ -92,7 +92,10 @@ class Globals:
     WRONG_WAY_TO_IMPLEMENT_IT = 'WRONG_WAY_TO_IMPLEMENT_IT'
     PROPER_WAY_TO_IMPLEMENT_IT = 'PROPER_WAY_TO_IMPLEMENT_IT'
 
+    GIT_COMMITTER = 'git-committer'
+
     DEBUG = '[Debug] '
+    ERROR = '[Error] '
 
     def __init__(self,
         mode = PROPER_WAY_TO_IMPLEMENT_IT,
@@ -130,7 +133,7 @@ class Globals:
             except : self.extension = Globals.EXTENSION
 
             self.printStatus = self.getGlobalsPrintStatus()
-            self.apiNames = self.getGlobalsApiList()
+            self.apiNameList = self.getGlobalsApiList()
 
             self.localGlobalsApiFilePath = f'{Globals.LOCAL_GLOBALS_API_PATH}{self.globalsApiName}.{Globals.PYTHON_EXTENSION}'
             self.globalsApiPath = f'{self.getApiPath(self.globalsApiName)}{self.localGlobalsApiFilePath}'
@@ -146,7 +149,7 @@ class Globals:
                 {self.__class__.__name__}.apiPath =                     {self.apiPath}
                 {self.__class__.__name__}.apiName =                     {self.apiName}
                 {self.__class__.__name__}.apisRoot =                    {self.apisRoot}
-                {self.__class__.__name__}.apiNames =                    {self.apiNames}
+                {self.__class__.__name__}.apiNameList =                    {self.apiNameList}
                 {self.__class__.__name__}.localGlobalsApiFilePath =     {self.localGlobalsApiFilePath}
                 {self.__class__.__name__}.globalsApiName =              {self.globalsApiName}
                 {self.__class__.__name__}.globalsApiPath =              {self.globalsApiPath}
@@ -185,7 +188,7 @@ class Globals:
 
     def makeApisAvaliable(self) :
         self.apisTree = []
-        for apiName in self.apiNames :
+        for apiName in self.apiNameList :
             apiTree = self.makePathTreeVisible(self.getApiPath(apiName))
             apiTree = {apiName:apiTree}
             self.apisTree.append(apiTree)
@@ -346,7 +349,7 @@ class Globals:
         try :
             return self.accessTree(nodeKey,settingTree)
         except :
-            return None 
+            return None
 
     def accessTree(self,nodeKey,tree) :
         if nodeKey == Globals.NOTHING :
@@ -498,7 +501,7 @@ class Globals:
                 with open(self.globalsApiPath,Globals.READ,encoding = Globals.ENCODING) as globalsFile :
                     for line in globalsFile :
                         globalsScript.append(line)
-                for apiName in self.apiNames :
+                for apiName in self.apiNameList :
                     updatingApiPath =f'{self.getApiPath(apiName)}{self.localGlobalsApiFilePath}'
                     if apiName != self.globalsApiName :
                         with open(updatingApiPath,Globals.OVERRIDE,encoding = Globals.ENCODING) as globalsFile :

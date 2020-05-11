@@ -1,30 +1,42 @@
-import os, subprocess, time
+import os, sys, subprocess, time
+
+COMMAND_ADD_ALL = 'add-all'
+COMMAND_COMMIT = 'commit'
+COMMAND_PUSH = 'push'
+COMMAND_ADD_ALL_COMMIT_PUSH = 'add-all-commit-push'
+COMMAND_ADD_ENVIRONMENT_VARIABLE = 'add-environment-variable'
 
 class GitCommitter:
 
     def __init__(self,globals):
 
         self.globals = globals
+        self._1_ITS_RESERVED_FOR_COMMAND = 1
+        self._2_ = 2
+        self._3_ = 3
 
     def runCommandList(self,commandList):
-        for apiName in self.globals.apiNames :
+        globals = self.globals
+        for apiName in globals.apiNameList :
             try :
                 for command in commandList :
-                    subprocess.call(command, shell=True, cwd=f'C:\\Users\\Samuel Jansen\\Projects\\{apiName}')
+                    subprocess.call(command, shell=True, cwd=f'{globals.localPath}{globals.apisRoot}{apiName}')
             except :
-                print(f'[ERROR] {apiName}')
+                print(f'{self.globals.ERROR}{apiName}')
 
     def addAll(self):
         self.runCommandList([Command.ADD_ALL])
 
-    def commit(self,commitMessage):
+    def commit(self):
+        commitMessage = sys.argv[self._2_]
         commandCommit = Command.COMMIT.replace(Command.COMMIT_MESSAGE_TOKEN,commitMessage)
         self.runCommandList([commandCommit])
 
     def push(self):
         self.runCommandList([Command.PUSH])
 
-    def addAllCommitPush(self,commitMessage):
+    def addAllCommitPush(self):
+        commitMessage = sys.argv[self._2_]
         commandCommit = Command.COMMIT.replace(Command.COMMIT_MESSAGE_TOKEN,commitMessage)
         self.runCommandList([
             Command.ADD_ALL,
@@ -32,7 +44,9 @@ class GitCommitter:
             Command.PUSH
         ])
 
-    def addEnvironmentVariable(self,variableKey,variableValue):
+    def addEnvironmentVariable(self):
+        variableKey = sys.argv[self._2_]
+        variableValue = sys.argv[self._3_]
         globals = self.globals
         if variableKey == Command.KW_SELF :
             variableValue = f'{globals.localPath}{globals.apisRoot}{GitCommitter.__name__}{globals.BACK_SLASH}{globals.baseApiPath}'
