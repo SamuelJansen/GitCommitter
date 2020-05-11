@@ -2,7 +2,7 @@ Globals:
   update-globals: False
   print-status: False
   api:
-    list: [GitCommitter,Courses,CourseEditor,CourseDesktop,Chess,Application]
+    list: [Globals,GitCommitter]
     extension: gbl
     dependency:
       update: False
