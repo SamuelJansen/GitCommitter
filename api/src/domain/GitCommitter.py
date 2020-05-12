@@ -1,39 +1,69 @@
-import os, sys, subprocess, time
+import subprocess, codecs
 
 import gitc
 
-COMMAND_CLONE_ALL_IF_NEEDED = 'clone-all-if-needed'
-COMMAND_PULL_ALL = 'pull-all'
-COMMAND_CHECKOUT_ALL = 'checkout-all'
-COMMAND_ADD_ALL = 'add-all'
-COMMAND_COMMIT = 'commit'
-COMMAND_PUSH = 'push'
-COMMAND_ADD_ALL_COMMIT_PUSH = 'add-commit-push-all'
-COMMAND_ADD_ENVIRONMENT_VARIABLE = 'add-environment-variable'
+class Command:
+
+    KW_GIT = 'git'
+    KW_SELF = 'self'
+    KW_CLONE = 'clone'
+    KW_STATUS = 'status'
+    KW_BRANCH = 'branch'
+    KW_PULL = 'pull'
+    KW_CHECKOUT = 'checkout'
+    KW_ADD = 'add'
+    KW_COMMIT = 'commit'
+    KW_PUSH = 'push'
+
+    TOKEN_REPOSITORY_URL = '__TOKEN_REPOSITORY_URL__'
+    TOKEN_COMMIT_MESSAGE = '__TOKEN_COMMIT_MESSAGE__'
+    TOKEN_BRANCH_NAME = '__TOKEN_BRANCH_NAME__'
+
+    CLONE = f'{KW_GIT} {KW_CLONE} {TOKEN_REPOSITORY_URL}'
+    STATUS = f'{KW_GIT} {KW_STATUS}'
+    BRANCH = f'{KW_GIT} {KW_BRANCH}'
+    PULL = f'{KW_GIT} {KW_PULL}'
+    CHECKOUT = f'{KW_GIT} {KW_CHECKOUT} {TOKEN_BRANCH_NAME}'
+    ADD = f'{KW_GIT} {KW_ADD} .'
+    COMMIT = f'{KW_GIT} {KW_COMMIT} -m "{TOKEN_COMMIT_MESSAGE}"'
+    PUSH = f'{KW_GIT} {KW_PUSH}'
+
+KW_ALL = 'all'
+KW_IF_DASH_NEEDED = 'if-needed'
+
+COMMAND_CLONE_ALL_IF_NEEDED = f'{Command.KW_CLONE}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
+COMMAND_CHECKOUT_B_ALL_IF_NEEDED = f'{Command.KW_CHECKOUT}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
+
+COMMAND_STATUS_ALL = f'{Command.KW_STATUS}-{KW_ALL}'
+COMMAND_BRANCH_ALL = f'{Command.KW_BRANCH}-{KW_ALL}'
+COMMAND_PULL_ALL = f'{Command.KW_PULL}-{KW_ALL}'
+COMMAND_CHECKOUT_ALL = f'{Command.KW_CHECKOUT}-{KW_ALL}'
+COMMAND_ADD_ALL = f'{Command.KW_ADD}-{KW_ALL}'
+COMMAND_COMMIT_ALL = f'{Command.KW_COMMIT}-{KW_ALL}'
+COMMAND_PUSH_ALL = f'{Command.KW_PUSH}-{KW_ALL}'
+COMMAND_ADD_COMMIT_PUSH_ALL = f'{Command.KW_ADD}-{Command.KW_COMMIT}-{Command.KW_PUSH}-{KW_ALL}'
+COMMAND_ADD_ENVIRONMENT_VARIABLE = f'add-environment-variable'
 
 class GitCommitter:
 
-    def __init__(self,globals):
-        self.globals = globals
-        self._1_ITS_RESERVED_FOR_GIT_COMMITTER = 1
-        self._2_ITS_RESERVED_FOR_COMMAND = 2
-        self._3_ = 3
-
-        self.gitUrl = globals.getSetting(f'{globals.apiName}.api.git.url')
-        self.gitExtension = globals.getSetting(f'{globals.apiName}.api.git.extension')
-        print(f'globals.settingTree = {globals.settingTree}')
-        print(f'globals.apiName = {globals.apiName}')
-        print(f'gitUrl = {self.gitUrl}, gitExtension = {self.gitExtension}')
+    GIT_COMMITTER_INDEX = 0
+    COMMAND_INDEX = 1
+    _1_ARGUMENT_INDEX = 2
+    _2_ARGUMENT_INDEX = 3
 
     def runCommandList(self,commandList):
         globals = self.globals
+        returnSet = {}
         for apiName in globals.apiNameList :
             try :
+                returnSet[apiName] = {}
                 for command in commandList :
                     print(f'{globals.NEW_LINE}[{apiName}] {command}')
-                    subprocess.call(command, shell=True, cwd=f'{globals.localPath}{globals.apisRoot}{apiName}')
+                    processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
+                    returnSet[apiName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
             except :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_HIFEN_SPACE}{command}')
+                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}')
+        return returnSet
 
     def runApiNameCommandListTree(self,apiNameCommandListTree):
         globals = self.globals
@@ -43,9 +73,29 @@ class GitCommitter:
                     print(f'{globals.NEW_LINE}[{apiName}] {command}')
                     subprocess.call(command, shell=True, cwd=f'{globals.localPath}{globals.apisRoot}')
             except :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_HIFEN_SPACE}{command}')
+                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}')
 
-    def cloneAllIfNeeded(self):
+    def __init__(self,globals):
+        self.globals = globals
+        self.gitUrl = globals.getSetting(f'{globals.apiName}.api.git.url')
+        self.gitExtension = globals.getSetting(f'{globals.apiName}.api.git.extension')
+        self.commandSet = {
+            COMMAND_ADD_ENVIRONMENT_VARIABLE : self.addEnvironmentVariable,
+
+            COMMAND_CLONE_ALL_IF_NEEDED : self.cloneAllIfNeeded,
+            COMMAND_CHECKOUT_B_ALL_IF_NEEDED : self.checkoutBAllIfNeeded,
+
+            COMMAND_STATUS_ALL : self.statusAll,
+            COMMAND_BRANCH_ALL : self.branchAll,
+            COMMAND_PULL_ALL : self.pullAll,
+            COMMAND_CHECKOUT_ALL : self.checkoutAll,
+            COMMAND_ADD_ALL : self.addAll,
+            COMMAND_COMMIT_ALL : self.commitAll,
+            COMMAND_PUSH_ALL : self.pushAll,
+            COMMAND_ADD_COMMIT_PUSH_ALL : self.addCommitPushAll
+        }
+
+    def cloneAllIfNeeded(self,sysCommandList):
         globals = self.globals
         repositoryNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
         apiNameCommandListTree = {}
@@ -56,58 +106,104 @@ class GitCommitter:
                 apiNameCommandListTree[apiName] = [commandCloneAllIfNeeded]
         self.runApiNameCommandListTree(apiNameCommandListTree)
 
-    def pullAll(self):
-        self.runCommandList([Command.PULL_ALL])
+    def checkoutBAllIfNeeded(self,sysCommandList):
+        branchName = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
+        returnSet = self.runCommandList([commandCheckoutAll])
+        self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
-    def checkoutAll(self):
-        branchName = sys.argv[self._3_]
-        commandCheckoutAll = Command.CHECKOUT_ALL.replace(Command.TOKEN_BRANCH_NAME,branchName)
-        self.runCommandList([commandCheckoutAll])
+    def statusAll(self,sysCommandList):
+        returnSet = self.runCommandList([Command.STATUS])
+        self.debugReturnSet('statusAll',self.getReturnSetValue(returnSet))
 
-    def addAll(self):
-        self.runCommandList([Command.ADD_ALL])
+    def branchAll(self,sysCommandList):
+        returnSet = self.runCommandList([Command.BRANCH])
+        self.debugReturnSet('branchAll',self.getReturnSetValue(returnSet))
 
-    def commitAll(self):
-        commitMessage = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
+    def pullAll(self,sysCommandList):
+        self.runCommandList([Command.PULL])
+        self.debugReturnSet('pullAll',self.getReturnSetValue(returnSet))
+
+    def checkoutAll(self,sysCommandList):
+        branchName = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
+        returnSet = self.runCommandList([commandCheckoutAll])
+        self.debugReturnSet('checkoutAll',self.getReturnSetValue(returnSet))
+
+    def addAll(self,sysCommandList):
+        returnSet = self.runCommandList([Command.ADD])
+        self.debugReturnSet('addAll',self.getReturnSetValue(returnSet))
+
+    def commitAll(self,sysCommandList):
+        commitMessage = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
         commandCommit = Command.COMMIT.replace(Command.TOKEN_COMMIT_MESSAGE,commitMessage)
-        self.runCommandList([commandCommit])
+        returnSet = self.runCommandList([commandCommit])
+        self.debugReturnSet('commitAll',self.getReturnSetValue(returnSet))
 
-    def pushAll(self):
-        self.runCommandList([Command.PUSH])
+    def pushAll(self,sysCommandList):
+        returnSet = self.runCommandList([Command.PUSH])
+        self.debugReturnSet('pushAll',self.getReturnSetValue(returnSet))
 
-    def addCommitPushAll(self):
-        commitMessage = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
+    def addCommitPushAll(self,sysCommandList):
+        commitMessage = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
         commandCommit = Command.COMMIT.replace(Command.TOKEN_COMMIT_MESSAGE,commitMessage)
-        self.runCommandList([
-            Command.ADD_ALL,
+        returnSet = self.runCommandList([
+            Command.ADD,
             commandCommit,
             Command.PUSH
         ])
+        self.debugReturnSet('addCommitPushAll',self.getReturnSetValue(returnSet))
 
-    def addEnvironmentVariable(self):
-        variableKey = sys.argv[self._2_ITS_RESERVED_FOR_COMMAND]
-        variableValue = sys.argv[self._3_]
+    def addEnvironmentVariable(self,sysCommandList):
+        variableKey = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        variableValue = sysCommandList[GitCommitter._2_ARGUMENT_INDEX]
         globals = self.globals
         if variableKey == Command.KW_SELF :
             variableValue = f'{globals.localPath}{globals.apisRoot}{GitCommitter.__name__}{globals.BACK_SLASH}{globals.baseApiPath}'
             print(variableValue)
         os.environ[variableKey] = variableValue
 
-    def handleSystemCommand(self):
-        gitc.handleSystemCommand(self)
+    def handleSystemCommand(self,sysCommandList):
+        sysCommandList = sysCommandList.copy()
+        globals = self.globals
+        MISSING_SPACE = 'Missing '
+        if len(sysCommandList) == 0 or globals.GIT_COMMITTER not in sysCommandList :
+            print(f'{globals.ERROR}{MISSING_SPACE}{globals.DOUBLE_QUOTE}{globals.GIT_COMMITTER}{globals.DOUBLE_QUOTE}')
+            return
+        if len(sysCommandList) < self.COMMAND_INDEX :
+            print(f'{globals.ERROR}{MISSING_SPACE}{globals.GIT_COMMITTER} command')
+            return
+        gitCommiterCallCommand = sysCommandList[self.GIT_COMMITTER_INDEX]
+        command = sysCommandList[self.COMMAND_INDEX]
+        if globals.GIT_COMMITTER == gitCommiterCallCommand :
+            try :
+                self.commandSet[command](sysCommandList)
+            except :
+                print(f'{globals.ERROR}command not fount')
 
+    def getProcessReturnValue(self,processReturn):
+        return str(processReturn.stdout,self.globals.ENCODING)
 
-class Command:
-    KW_GIT = 'git'
-    KW_SELF = 'self'
+    def getProcessReturnErrorValue(self,processReturn):
+        return str(processReturn.stderr,self.globals.ENCODING)
 
-    TOKEN_REPOSITORY_URL = '__TOKEN_REPOSITORY_URL__'
-    TOKEN_COMMIT_MESSAGE = '__TOKEN_COMMIT_MESSAGE__'
-    TOKEN_BRANCH_NAME = '__TOKEN_BRANCH_NAME__'
+    def getReturnSetValue(self,returnSet):
+        globals = self.globals
+        returnValue = globals.NOTHING
+        if returnSet and returnSet.items():
+            for apiName,specificReturnSet in returnSet.items() :
+                if specificReturnSet and specificReturnSet.items() :
+                    for key,value in specificReturnSet.items() :
+                        processReturnValue = self.getProcessReturnValue(value)
+                        if processReturnValue and not globals.NOTHING == processReturnValue :
+                            returnValue += f'{apiName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{processReturnValue}'
+                        else :
+                            returnValue += f'{apiName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{self.getProcessReturnErrorValue(value)}'
+                    returnValue += globals.NEW_LINE
+        return returnValue
 
-    CLONE = f'{KW_GIT} clone {TOKEN_REPOSITORY_URL}'
-    PULL_ALL = f'{KW_GIT} pull'
-    CHECKOUT_ALL = f'{KW_GIT} checkout {TOKEN_BRANCH_NAME}'
-    ADD_ALL = f'{KW_GIT} add .'
-    COMMIT = f'{KW_GIT} commit -m "{TOKEN_COMMIT_MESSAGE}"'
-    PUSH = f'{KW_GIT} push'
+    def printReturn(self,processReturn):
+        print(self.getReturnValue(processReturn))
+
+    def debugReturnSet(self,callMethodName,ReturnSetValue):
+        self.globals.debug(f'{callMethodName}{2 * self.globals.NEW_LINE}{ReturnSetValue}')
