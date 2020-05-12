@@ -1,12 +1,9 @@
 def handleSystemCommand(gitCommitter) :
-
     import sys
-
     import GitCommitter
-
     globals = gitCommitter.globals
 
-    if len(sys.argv) <= gitCommitter._0_ or globals.GIT_COMMITTER not in sys.argv :
+    if len(sys.argv) <= 0 or globals.GIT_COMMITTER not in sys.argv :
         print(f'{globals.ERROR}Missing "{globals.GIT_COMMITTER}"')
         return
     if len(sys.argv) < gitCommitter._2_ITS_RESERVED_FOR_COMMAND :
@@ -21,14 +18,21 @@ def handleSystemCommand(gitCommitter) :
         if command == GitCommitter.COMMAND_ADD_ENVIRONMENT_VARIABLE :
             gitCommitter.addEnvironmentVariable()
 
+        elif command == GitCommitter.COMMAND_CLONE_ALL_IF_NEEDED :
+            gitCommitter.cloneAllIfNeeded()
+        elif command == GitCommitter.COMMAND_PULL_ALL :
+            gitCommitter.pullAll()
+        elif command == GitCommitter.COMMAND_CHECKOUT_ALL :
+            gitCommitter.checkoutAll()
+
         elif command == GitCommitter.COMMAND_ADD_ALL :
             gitCommitter.addAll()
         elif command == GitCommitter.COMMAND_COMMIT :
-            gitCommitter.commit()
+            gitCommitter.commitAll()
         elif command == GitCommitter.COMMAND_PUSH :
-            gitCommitter.push()
+            gitCommitter.pushAll()
         elif command == GitCommitter.COMMAND_ADD_ALL_COMMIT_PUSH :
-            gitCommitter.addAllCommitPush()
+            gitCommitter.addCommitPushAll()
 
         else :
             print(f'{globals.ERROR}command not fount')

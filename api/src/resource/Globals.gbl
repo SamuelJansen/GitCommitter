@@ -2,7 +2,8 @@ Globals:
   update-globals: False
   print-status: False
   api:
-    list: [Globals,GitCommitter]
-    extension: gbl
+    list: [Globals,GitCommitter,SeleniumHelper,SwaggerIntegrationTests,OfficeTrackIntegrationTests,VoiceAssistant,Application]
+    extension: yml
     dependency:
       update: False
+      list: [Popen,Path]

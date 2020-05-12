@@ -1,0 +1,6 @@
+GitCommitter:
+  api:
+    extension: yml
+    git:
+      url: https://github.com/SamuelJansen/
+      extension: git
