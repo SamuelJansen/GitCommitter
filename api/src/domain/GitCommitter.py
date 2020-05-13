@@ -29,6 +29,7 @@ class Command:
     COMMIT = f'{KW_GIT} {KW_COMMIT} -m "{TOKEN_COMMIT_MESSAGE}"'
     PUSH = f'{KW_GIT} {KW_PUSH}'
 
+
 KW_ALL = 'all'
 KW_IF_DASH_NEEDED = 'if-needed'
 
@@ -62,8 +63,9 @@ class GitCommitter:
                     print(f'{globals.NEW_LINE}[{apiName}] {command}')
                     processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
                     returnSet[apiName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
-            except :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}')
+                    print(self.getProcessReturnValue(returnSet[apiName][command]))
+            except Exception as exception :
+                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
     def runApiNameCommandListTree(self,apiNameCommandListTree):
@@ -73,10 +75,13 @@ class GitCommitter:
                 for command in commandList :
                     print(f'{globals.NEW_LINE}[{apiName}] {command}')
                     subprocess.call(command, shell=True, cwd=f'{globals.localPath}{globals.apisRoot}')
-            except :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}')
+            except Exception as exception :
+                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
 
     def __init__(self,globals):
+
+        self.GIT_COMMITTER = globals.GIT_COMMITTER
+
         self.globals = globals
         self.gitUrl = globals.getSetting(f'{globals.apiName}.api.git.url')
         self.gitExtension = globals.getSetting(f'{globals.apiName}.api.git.extension')
