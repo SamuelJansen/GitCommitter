@@ -24,6 +24,7 @@ class Command:
     BRANCH = f'{KW_GIT} {KW_BRANCH}'
     PULL = f'{KW_GIT} {KW_PULL}'
     CHECKOUT = f'{KW_GIT} {KW_CHECKOUT} {TOKEN_BRANCH_NAME}'
+    CHECKOUT_DASH_B = f'{KW_GIT} {KW_CHECKOUT} -b {TOKEN_BRANCH_NAME}'
     ADD = f'{KW_GIT} {KW_ADD} .'
     COMMIT = f'{KW_GIT} {KW_COMMIT} -m "{TOKEN_COMMIT_MESSAGE}"'
     PUSH = f'{KW_GIT} {KW_PUSH}'
@@ -32,7 +33,7 @@ KW_ALL = 'all'
 KW_IF_DASH_NEEDED = 'if-needed'
 
 COMMAND_CLONE_ALL_IF_NEEDED = f'{Command.KW_CLONE}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
-COMMAND_CHECKOUT_B_ALL_IF_NEEDED = f'{Command.KW_CHECKOUT}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
+COMMAND_CHECKOUT_B_ALL_IF_NEEDED = f'{Command.KW_CHECKOUT}-b-{KW_ALL}-{KW_IF_DASH_NEEDED}'
 
 COMMAND_STATUS_ALL = f'{Command.KW_STATUS}-{KW_ALL}'
 COMMAND_BRANCH_ALL = f'{Command.KW_BRANCH}-{KW_ALL}'
@@ -102,14 +103,22 @@ class GitCommitter:
         for apiName in globals.apiNameList :
             if apiName not in repositoryNameList :
                 repositoryUrl = f'{self.gitUrl}{apiName}.{self.gitExtension}'
-                commandCloneAllIfNeeded = Command.CLONE.replace(Command.TOKEN_REPOSITORY_URL,repositoryUrl)
-                apiNameCommandListTree[apiName] = [commandCloneAllIfNeeded]
+                command = Command.CLONE.replace(Command.TOKEN_REPOSITORY_URL,repositoryUrl)
+                apiNameCommandListTree[apiName] = [command]
         self.runApiNameCommandListTree(apiNameCommandListTree)
 
     def checkoutBAllIfNeeded(self,sysCommandList):
         branchName = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
         commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
         returnSet = self.runCommandList([commandCheckoutAll])
+        if returnSet and returnSet.items():
+            for apiName,specificReturnSet in returnSet.items() :
+                if specificReturnSet and specificReturnSet.items() :
+                    for key,value in specificReturnSet.items() :
+                        if 'error' in self.getProcessReturnErrorValue(value) :
+                            command = CHECKOUT_DASH_B.replace(TOKEN_BRANCH_NAME,branchName)
+                            apiNameCommandListTree = {apiName:[command]}
+                            self.runApiNameCommandListTree(apiNameCommandListTree)
         self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
