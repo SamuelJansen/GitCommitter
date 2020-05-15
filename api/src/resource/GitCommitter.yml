@@ -1,6 +1,9 @@
 GitCommitter:
   api:
     extension: yml
+    dependency:
+      update: true
+      list: [Popen,Path]
     git:
       url: https://github.com/SamuelJansen/
       extension: git

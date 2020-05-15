@@ -135,7 +135,7 @@ class GitCommitter:
         self.debugReturnSet('branchAll',self.getReturnSetValue(returnSet))
 
     def pullAll(self,sysCommandList):
-        self.runCommandList([Command.PULL])
+        returnSet = self.runCommandList([Command.PULL])
         self.debugReturnSet('pullAll',self.getReturnSetValue(returnSet))
 
     def checkoutAll(self,sysCommandList):
@@ -190,10 +190,10 @@ class GitCommitter:
         gitCommiterCallCommand = sysCommandList[self.GIT_COMMITTER_INDEX]
         command = sysCommandList[self.COMMAND_INDEX]
         if globals.GIT_COMMITTER == gitCommiterCallCommand :
-            try :
+            # try :
                 self.commandSet[command](sysCommandList)
-            except :
-                print(f'{globals.ERROR}command not fount')
+            # except :
+                # print(f'{globals.ERROR}command not fount')
 
     def getProcessReturnValue(self,processReturn):
         return str(processReturn.stdout,self.globals.ENCODING)

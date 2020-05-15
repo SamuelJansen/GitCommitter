@@ -2,8 +2,8 @@ Globals:
   update-globals: False
   print-status: False
   api:
-    list: [GitCommitter]
+    list: [GitCommitter,OfficeTrackIntegrationTests]
     extension: yml
     dependency:
-      update: False
+      update: true
       list: [Popen,Path]
