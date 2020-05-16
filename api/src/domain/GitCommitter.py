@@ -82,8 +82,10 @@ class GitCommitter:
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
+    ###- update it so it can return a set
     def runApiNameCommandListTree(self,apiNameCommandListTree,path=None):
         globals = self.globals
+        subprocessReturn = None
         for apiName,commandList in apiNameCommandListTree.items() :
             try :
                 for command in commandList :
@@ -94,9 +96,9 @@ class GitCommitter:
                     print(f'{globals.NEW_LINE}[{apiName}] {command} {processPath}')
                     subprocessReturn = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
                     print(self.getProcessReturnValue(subprocessReturn))
-                    return subprocessReturn
             except Exception as exception :
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
+        return subprocessReturn
 
     def __init__(self,globals):
         self.GIT_COMMITTER = globals.GIT_COMMITTER
