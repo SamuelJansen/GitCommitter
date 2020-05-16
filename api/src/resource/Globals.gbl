@@ -1,9 +1,9 @@
 Globals:
-  update-globals: False
-  print-status: False
-  api:
-    list: [GitCommitter,VoiceAssistant]
-    extension: yml
-    dependency:
-      update: true
-      list: [Popen,Path]
+    update-globals: False
+    print-status: False
+    api:
+        list: [GitCommitter,VoiceAssistant,SystemHelper]
+        extension: yml
+        dependency:
+            update: true
+            list: [Popen,Path]

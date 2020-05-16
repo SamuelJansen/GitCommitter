@@ -17,6 +17,7 @@ class GitCommitter:
 
     KW_ALL = 'all'
     KW_IF_DASH_NEEDED = 'if-needed'
+    KW_REPOSITORY = 'repository'
 
     CLONE_ALL_IF_NEEDED = f'{GitCommand.KW_CLONE}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
     CHECKOUT_B_ALL_IF_NEEDED = f'{GitCommand.KW_CHECKOUT}-b-{KW_ALL}-{KW_IF_DASH_NEEDED}'
@@ -31,6 +32,10 @@ class GitCommitter:
     PUSH_ALL = f'{GitCommand.KW_PUSH}-{KW_ALL}'
     ADD_COMMIT_PUSH_ALL = f'{GitCommand.KW_ADD}-{GitCommand.KW_COMMIT}-{GitCommand.KW_PUSH}-{KW_ALL}'
     MERGE_ORIGIN_ALL = f'{GitCommand.KW_MERGE}-{GitCommand.KW_ORIGIN}-{KW_ALL}'
+
+    CLONE_REPOSITORY_IF_NEEDED = f'{GitCommand.KW_CLONE}-{KW_REPOSITORY}-{KW_IF_DASH_NEEDED}'
+
+
     ADD_ENVIRONMENT_VARIABLE = f'add-environment-variable'
 
     SKIP = 'skip'
@@ -59,6 +64,8 @@ class GitCommitter:
             GitCommitter.ADD_COMMIT_PUSH_ALL : self.addCommitPushAll,
             GitCommitter.MERGE_ORIGIN_ALL : self.mergeOriginAll,
 
+            GitCommitter.CLONE_REPOSITORY_IF_NEEDED : self.cloneRepositoryIfNeeded,
+
             GitCommitter.ADD_ENVIRONMENT_VARIABLE : self.addEnvironmentVariable
         }
         self.voiceAssistant = VoiceAssistant.VoiceAssistant(self.globals)
@@ -66,49 +73,67 @@ class GitCommitter:
     def runCommandList(self,commandList):
         globals = self.globals
         returnSet = {}
-        for apiName in globals.apiNameList :
+        for repositoryName in globals.apiNameList :
             try :
-                returnSet[apiName] = {}
+                returnSet[repositoryName] = {}
                 for command in commandList :
-                    print(f'{globals.NEW_LINE}[{apiName}] {command}')
-                    processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
-                    returnSet[apiName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
-                    print(self.getProcessReturnValue(returnSet[apiName][command]))
-                    # globals.debug(returnSet[apiName][command])
+                    print(f'{globals.NEW_LINE}[{repositoryName}] {command}')
+                    processPath = f'{globals.localPath}{globals.apisRoot}{repositoryName}'
+                    returnSet[repositoryName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    print(self.getProcessReturnValue(returnSet[repositoryName][command]))
+                    # globals.debug(returnSet[repositoryName][command])
             except Exception as exception :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
+                print(f'{self.globals.ERROR}{repositoryName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
-    def runApiNameCommandListTree(self,apiNameCommandListTree,path=None):
+    def runRepositoryNameCommandListTree(self,repositoryNameCommandListTree,path=None):
         globals = self.globals
         returnSet = {}
-        for apiName,commandList in apiNameCommandListTree.items() :
+        for repositoryName,commandList in repositoryNameCommandListTree.items() :
             try :
-                returnSet[apiName] = {}
+                returnSet[repositoryName] = {}
                 for command in commandList :
                     if path :
                         processPath = path
                     else :
-                        processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
-                    print(f'{globals.NEW_LINE}[{apiName}] {command} {processPath}')
-                    returnSet[apiName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
-                    print(self.getProcessReturnValue(returnSet[apiName][command]))
+                        processPath = f'{globals.localPath}{globals.apisRoot}{repositoryName}'
+                    print(f'{globals.NEW_LINE}[{repositoryName}] {command} {processPath}')
+                    returnSet[repositoryName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    print(self.getProcessReturnValue(returnSet[repositoryName][command]))
             except Exception as exception :
-                print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
-        return returnSet[apiName][command]
+                print(f'{self.globals.ERROR}{repositoryName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
+        return returnSet[repositoryName][command]
+
+    def cloneRepositoryIfNeeded(self,sysCommandList):
+        globals = self.globals
+        repositoryName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Repository name',sysCommandList)
+        repositoryNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
+        repositoryNameCommandListTree = {}
+        if not repositoryNameList or repositoryName not in repositoryNameList :
+            repositoryUrl = f'{self.gitUrl}{repositoryName}.{self.gitExtension}'
+            command = GitCommand.CLONE.replace(GitCommand.TOKEN_REPOSITORY_URL,repositoryUrl)
+            processPath = f'{globals.localPath}{globals.apisRoot}'
+            repositoryNameCommandListTree[repositoryName] = [command]
+        else :
+            print(f'{repositoryName} already exists')
+        if repositoryNameCommandListTree :
+            self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
 
     def cloneAllIfNeeded(self,sysCommandList):
         globals = self.globals
         repositoryNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
         if repositoryNameList :
-            apiNameCommandListTree = {}
-            for apiName in globals.apiNameList :
-                if apiName not in repositoryNameList :
-                    repositoryUrl = f'{self.gitUrl}{apiName}.{self.gitExtension}'
+            repositoryNameCommandListTree = {}
+            for repositoryName in globals.apiNameList :
+                if repositoryName not in repositoryNameList :
+                    repositoryUrl = f'{self.gitUrl}{repositoryName}.{self.gitExtension}'
                     command = GitCommand.CLONE.replace(GitCommand.TOKEN_REPOSITORY_URL,repositoryUrl)
                     processPath = f'{globals.localPath}{globals.apisRoot}'
-                    apiNameCommandListTree[apiName] = [command]
-            self.runApiNameCommandListTree(apiNameCommandListTree,path=processPath)
+                    repositoryNameCommandListTree[repositoryName] = [command]
+                else :
+                    print(f'{repositoryName} already exists')
+            if repositoryNameCommandListTree :
+                self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
 
     def checkoutBAllIfNeeded(self,sysCommandList):
         branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
@@ -116,31 +141,31 @@ class GitCommitter:
             commandCheckoutAll = GitCommand.CHECKOUT.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
             returnSet = self.runCommandList([commandCheckoutAll])
             if returnSet and returnSet.items():
-                for apiName,specificReturnSet in returnSet.items() :
+                for repositoryName,specificReturnSet in returnSet.items() :
                     if specificReturnSet and specificReturnSet.items() :
                         for key,value in specificReturnSet.items() :
                             if 'error' in self.getProcessReturnErrorValue(value) :
                                 command = GitCommand.CHECKOUT_DASH_B.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
-                                apiNameCommandListTree = {apiName:[command]}
-                                returnCorrectionSet = self.runApiNameCommandListTree(apiNameCommandListTree)
+                                repositoryNameCommandListTree = {repositoryName:[command]}
+                                returnCorrectionSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree)
             self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def pushSetUpStreamAllIfNedded(self,sysCommandList):
         returnSet = self.runCommandList([GitCommand.PUSH])
         if returnSet and returnSet.items():
-            for apiName,specificReturnSet in returnSet.items() :
+            for repositoryName,specificReturnSet in returnSet.items() :
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if GitCommand.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandPush = GitCommand.BRANCH
-                                returnCorrectionSet[apiName][command] = self.runApiNameCommandListTree({apiName:[commandPush]})
-                                returnedValue = self.getProcessReturnValue(returnCorrectionSet[apiName][command]).split(self.globals.NEW_LINE)
+                                returnCorrectionSet[repositoryName][command] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})
+                                returnedValue = self.getProcessReturnValue(returnCorrectionSet[repositoryName][command]).split(self.globals.NEW_LINE)
                                 if returnedValue :
                                     if '*' in dirtyBranchName :
                                         branchName = dirtyBranchName.split()[1].strip()
                                         commandPushSetUpStreamAll = GitCommand.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
-                                        returnCorrectionSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
+                                        returnCorrectionSet[repositoryName][commandPushSetUpStreamAll] = self.runRepositoryNameCommandListTree({repositoryName:[commandPushSetUpStreamAll]})
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
@@ -212,12 +237,8 @@ class GitCommitter:
     def wakeUpVoiceAssistant(self,sysCommandList):
         WakeUpVoiceAssistant.run(self)
 
-    def handleSystemCommand(self,sysCommandList):
-        sysCommandList = sysCommandList.copy()
+    def handleCommandList(self,sysCommandList):
         globals = self.globals
-        if len(sysCommandList) == 0 or globals.GITC_GIT_COMMITTER not in sysCommandList :
-            print(f'{globals.ERROR}{GitCommitter.MISSING_SPACE}{globals.DOUBLE_QUOTE}{globals.GITC_GIT_COMMITTER}{globals.DOUBLE_QUOTE}')
-            return
         if len(sysCommandList) < GitCommitter.COMMAND_INDEX :
             print(f'{globals.ERROR}{GitCommitter.MISSING_SPACE}{globals.GITC_GIT_COMMITTER} command')
             return
@@ -227,7 +248,7 @@ class GitCommitter:
             try :
                 self.commandSet[command](sysCommandList)
             except Exception as exception :
-                print(f'''{globals.ERROR}processing command "{gitCommiterCallCommand} {command}": {str(exception)}''')
+                print(f'''{globals.ERROR}Error processing command "{gitCommiterCallCommand} {command}": {str(exception)}''')
 
     def getProcessReturnValue(self,processReturn):
         return str(processReturn.stdout,self.globals.ENCODING)
@@ -239,14 +260,14 @@ class GitCommitter:
         globals = self.globals
         returnValue = globals.NOTHING
         if returnSet and returnSet.items():
-            for apiName,specificReturnSet in returnSet.items() :
+            for repositoryName,specificReturnSet in returnSet.items() :
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         processReturnValue = self.getProcessReturnValue(value)
                         if processReturnValue and not globals.NOTHING == processReturnValue :
-                            returnValue += f'{apiName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{processReturnValue}'
+                            returnValue += f'{repositoryName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{processReturnValue}'
                         else :
-                            returnValue += f'{apiName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{self.getProcessReturnErrorValue(value)}'
+                            returnValue += f'{repositoryName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{self.getProcessReturnErrorValue(value)}'
                     returnValue += globals.NEW_LINE
         return returnValue
 

@@ -15,7 +15,7 @@ def run(gitCommitter) :
         content = voiceAssistant.listen()
         if content not in VoiceAssistant.SLEEP :
             if selectedCommand and content in gitCommitter.CONFIRM :
-                gitCommitter.handleSystemCommand([globals.GITC_GIT_COMMITTER,selectedCommand[0][1][0]])
+                gitCommitter.handleCommandList([globals.GITC_GIT_COMMITTER,selectedCommand[0][1][0]])
             else :
                 selectedCommand = None
                 voiceAssistant.speak(content)
