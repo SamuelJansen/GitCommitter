@@ -152,8 +152,6 @@ class GitCommitter:
             self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def pushSetUpStreamAllIfNedded(self,sysCommandList):
-        print('here')
-        commandPushAll = Command.PUSH.replace(Command.TOKEN_BRANCH_NAME,branchName)
         returnSet = self.runCommandList([Command.PUSH])
         if returnSet and returnSet.items():
             for apiName,specificReturnSet in returnSet.items() :
