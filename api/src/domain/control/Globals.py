@@ -97,8 +97,8 @@ class Globals:
     WRONG_WAY_TO_IMPLEMENT_IT = 'WRONG_WAY_TO_IMPLEMENT_IT'
     PROPER_WAY_TO_IMPLEMENT_IT = 'PROPER_WAY_TO_IMPLEMENT_IT'
 
-    GIT_COMMITTER = 'git-committer'
-    GIT_COMMITTER_INDEX = 1
+    GITC_GIT_COMMITTER = 'git-committer'
+    GITC_GIT_COMMITTER_INDEX = 1
 
     DEBUG = '[Debug] '
     ERROR = '[Error] '
