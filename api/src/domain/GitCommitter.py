@@ -152,6 +152,7 @@ class GitCommitter:
             self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def pushSetUpStreamAllIfNedded(self,sysCommandList):
+        print('here')
         commandPushAll = Command.PUSH.replace(Command.TOKEN_BRANCH_NAME,branchName)
         returnSet = self.runCommandList([Command.PUSH])
         if returnSet and returnSet.items():
@@ -167,7 +168,6 @@ class GitCommitter:
                                     branchName = dirtyBranchName.split()[1].strip()
                                     commandPushSetUpStreamAll = Command.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(Command.TOKEN_BRANCH_NAME,branchName)
                                     returnSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
-                                    print('here')
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
