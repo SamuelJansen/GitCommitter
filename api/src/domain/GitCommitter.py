@@ -35,6 +35,8 @@ class Command:
     MERGE = f'{KW_GIT} {KW_MERGE}'
     ORIGIN = f'{KW_GIT} {KW_ORIGIN}'
     MERGE_ORIGIN = f'{KW_GIT} {KW_MERGE} {KW_ORIGIN}/{TOKEN_BRANCH_NAME}'
+    PUSH_SET_UPSTREAM_ORIGIN = f'{KW_GIT} {KW_PUSH} --set-upstream {KW_ORIGIN}'
+    PUSH_SET_UPSTREAM_ORIGIN_BRANCH = f'{PUSH_SET_UPSTREAM_ORIGIN} {TOKEN_BRANCH_NAME}'
 
 
 KW_ALL = 'all'
@@ -89,7 +91,9 @@ class GitCommitter:
                     else :
                         processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
                     print(f'{globals.NEW_LINE}[{apiName}] {command} {processPath}')
-                    return subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    subprocessReturn = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    print(self.getProcessReturnValue(subprocessReturn))
+                    return subprocessReturn
             except Exception as exception :
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
 
@@ -139,10 +143,28 @@ class GitCommitter:
                         for key,value in specificReturnSet.items() :
                             if 'error' in self.getProcessReturnErrorValue(value) :
                                 command = Command.CHECKOUT_DASH_B.replace(Command.TOKEN_BRANCH_NAME,branchName)
-                                print(f'            command = {command}')
                                 apiNameCommandListTree = {apiName:[command]}
-                                self.runApiNameCommandListTree(apiNameCommandListTree)
+                                returnSet[apiName][command] = self.runApiNameCommandListTree(apiNameCommandListTree)
             self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
+
+    def pushSetUpStreamAllIfNedded(self,sysCommandList):
+        commandPushAll = Command.PUSH.replace(Command.TOKEN_BRANCH_NAME,branchName)
+        returnSet = self.runCommandList([Command.PUSH])
+        if returnSet and returnSet.items():
+            for apiName,specificReturnSet in returnSet.items() :
+                if specificReturnSet and specificReturnSet.items() :
+                    for key,value in specificReturnSet.items() :
+                        if Command.PUSH_SET_UPSTREAM_ORIGIN in self.getProcessReturnErrorValue(value) :
+                            commandBranch = Command.BRANCH
+                            returnSet[apiName][commandBranch] = self.runApiNameCommandListTree({apiName:[command]})
+                            branchName = None
+                            for dirtyBranchName in self.getProcessReturnValue(returnSet[apiName][commandBranch]).split(self.globals.NEW_LINE) :
+                                if '*' in dirtyBranchName :
+                                    branchName = dirtyBranchName.split()[1].strip()
+                                    commandPushSetUpStreamAll = Command.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(Command.TOKEN_BRANCH_NAME,branchName)
+                                    returnSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
+                                    print('here')
+        self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
         returnSet = self.runCommandList([Command.STATUS])
@@ -162,7 +184,6 @@ class GitCommitter:
             commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
             returnSet = self.runCommandList([commandCheckoutAll])
             self.debugReturnSet('checkoutAll',self.getReturnSetValue(returnSet))
-
 
     def addAll(self,sysCommandList):
         returnSet = self.runCommandList([Command.ADD])
