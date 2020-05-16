@@ -157,9 +157,11 @@ class GitCommitter:
             for apiName,specificReturnSet in returnSet.items() :
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
+                        print(f'=====>>>>>> {self.getProcessReturnErrorValue(value)}')
                         if Command.PUSH_SET_UPSTREAM_ORIGIN in self.getProcessReturnErrorValue(value) :
                             commandBranch = Command.BRANCH
                             returnSet[apiName][commandBranch] = self.runApiNameCommandListTree({apiName:[command]})
+                            print(f'=====>>>>>> {self.getProcessReturnErrorValue(returnSet[apiName][commandBranch])}')
                             branchName = None
                             for dirtyBranchName in self.getProcessReturnValue(returnSet[apiName][commandBranch]).split(self.globals.NEW_LINE) :
                                 if '*' in dirtyBranchName :
