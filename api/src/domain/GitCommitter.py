@@ -14,6 +14,9 @@ class Command:
     KW_ADD = 'add'
     KW_COMMIT = 'commit'
     KW_PUSH = 'push'
+    KW_FETCH = 'fetch'
+    KW_MERGE = 'merge'
+    KW_ORIGIN = 'origin'
 
     TOKEN_REPOSITORY_URL = '__TOKEN_REPOSITORY_URL__'
     TOKEN_COMMIT_MESSAGE = '__TOKEN_COMMIT_MESSAGE__'
@@ -28,6 +31,10 @@ class Command:
     ADD = f'{KW_GIT} {KW_ADD} .'
     COMMIT = f'{KW_GIT} {KW_COMMIT} -m "{TOKEN_COMMIT_MESSAGE}"'
     PUSH = f'{KW_GIT} {KW_PUSH}'
+    FETCH = f'{KW_GIT} {KW_FETCH}'
+    MERGE = f'{KW_GIT} {KW_MERGE}'
+    ORIGIN = f'{KW_GIT} {KW_ORIGIN}'
+    MERGE_ORIGIN = f'{KW_GIT} {KW_MERGE} {KW_ORIGIN}\\{TOKEN_BRANCH_NAME}'
 
 
 KW_ALL = 'all'
@@ -44,6 +51,7 @@ COMMAND_ADD_ALL = f'{Command.KW_ADD}-{KW_ALL}'
 COMMAND_COMMIT_ALL = f'{Command.KW_COMMIT}-{KW_ALL}'
 COMMAND_PUSH_ALL = f'{Command.KW_PUSH}-{KW_ALL}'
 COMMAND_ADD_COMMIT_PUSH_ALL = f'{Command.KW_ADD}-{Command.KW_COMMIT}-{Command.KW_PUSH}-{KW_ALL}'
+COMMAND_MERGE_ORIGIN_ALL = f'{Command.KW_MERGE}-{Command.KW_ORIGIN}-{KW_ALL}'
 COMMAND_ADD_ENVIRONMENT_VARIABLE = f'add-environment-variable'
 
 class GitCommitter:
@@ -69,13 +77,17 @@ class GitCommitter:
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
-    def runApiNameCommandListTree(self,apiNameCommandListTree):
+    def runApiNameCommandListTree(self,apiNameCommandListTree,path=None):
         globals = self.globals
         for apiName,commandList in apiNameCommandListTree.items() :
             try :
                 for command in commandList :
-                    print(f'{globals.NEW_LINE}[{apiName}] {command}')
-                    subprocess.call(command, shell=True, cwd=f'{globals.localPath}{globals.apisRoot}')
+                    if path :
+                        processPath = path
+                    else :
+                        processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
+                    print(f'{globals.NEW_LINE}[{apiName}] {command} {processPath}')
+                    return subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
             except Exception as exception :
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
 
@@ -99,7 +111,8 @@ class GitCommitter:
             COMMAND_ADD_ALL : self.addAll,
             COMMAND_COMMIT_ALL : self.commitAll,
             COMMAND_PUSH_ALL : self.pushAll,
-            COMMAND_ADD_COMMIT_PUSH_ALL : self.addCommitPushAll
+            COMMAND_ADD_COMMIT_PUSH_ALL : self.addCommitPushAll,
+            COMMAND_MERGE_ORIGIN_ALL : self.mergeOriginAll
         }
 
     def cloneAllIfNeeded(self,sysCommandList):
@@ -110,19 +123,21 @@ class GitCommitter:
             if apiName not in repositoryNameList :
                 repositoryUrl = f'{self.gitUrl}{apiName}.{self.gitExtension}'
                 command = Command.CLONE.replace(Command.TOKEN_REPOSITORY_URL,repositoryUrl)
+                processPath = f'{globals.localPath}{globals.apisRoot}'
                 apiNameCommandListTree[apiName] = [command]
-        self.runApiNameCommandListTree(apiNameCommandListTree)
+        self.runApiNameCommandListTree(apiNameCommandListTree,path=processPath)
 
     def checkoutBAllIfNeeded(self,sysCommandList):
         branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
         commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
-        returnSet = self.runCommandList([commandCheckoutAll])
+        returnSet = self.runCommandList([Command.FETCH,commandCheckoutAll])
         if returnSet and returnSet.items():
             for apiName,specificReturnSet in returnSet.items() :
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         if 'error' in self.getProcessReturnErrorValue(value) :
-                            command = CHECKOUT_DASH_B.replace(TOKEN_BRANCH_NAME,branchName)
+                            command = Command.CHECKOUT_DASH_B.replace(Command.TOKEN_BRANCH_NAME,branchName)
+                            print(f'            command = {command}')
                             apiNameCommandListTree = {apiName:[command]}
                             self.runApiNameCommandListTree(apiNameCommandListTree)
         self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
@@ -169,6 +184,12 @@ class GitCommitter:
             Command.PUSH
         ])
         self.debugReturnSet('addCommitPushAll',self.getReturnSetValue(returnSet))
+
+    def mergeOriginAll(self,sysCommandList):
+        branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
+        commandMergeOriginAll = Command.MERGE_ORIGIN.replace(Command.TOKEN_BRANCH_NAME,branchName)
+        returnSet = self.runCommandList([commandMergeOriginAll])
+        self.debugReturnSet('mergeOriginAll',self.getReturnSetValue(returnSet))
 
     def addEnvironmentVariable(self,sysCommandList):
         variableKey = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Environment variable key',sysCommandList)
