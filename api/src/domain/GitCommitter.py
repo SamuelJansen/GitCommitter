@@ -64,6 +64,7 @@ class GitCommitter:
                     processPath = f'{globals.localPath}{globals.apisRoot}{apiName}'
                     returnSet[apiName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
                     print(self.getProcessReturnValue(returnSet[apiName][command]))
+                    self.globals.debug(returnSet[apiName][command])
             except Exception as exception :
                 print(f'{self.globals.ERROR}{apiName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
@@ -113,7 +114,7 @@ class GitCommitter:
         self.runApiNameCommandListTree(apiNameCommandListTree)
 
     def checkoutBAllIfNeeded(self,sysCommandList):
-        branchName = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
         commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
         returnSet = self.runCommandList([commandCheckoutAll])
         if returnSet and returnSet.items():
@@ -139,17 +140,18 @@ class GitCommitter:
         self.debugReturnSet('pullAll',self.getReturnSetValue(returnSet))
 
     def checkoutAll(self,sysCommandList):
-        branchName = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
         commandCheckoutAll = Command.CHECKOUT.replace(Command.TOKEN_BRANCH_NAME,branchName)
         returnSet = self.runCommandList([commandCheckoutAll])
         self.debugReturnSet('checkoutAll',self.getReturnSetValue(returnSet))
+
 
     def addAll(self,sysCommandList):
         returnSet = self.runCommandList([Command.ADD])
         self.debugReturnSet('addAll',self.getReturnSetValue(returnSet))
 
     def commitAll(self,sysCommandList):
-        commitMessage = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        commitMessage = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Commit message',sysCommandList)
         commandCommit = Command.COMMIT.replace(Command.TOKEN_COMMIT_MESSAGE,commitMessage)
         returnSet = self.runCommandList([commandCommit])
         self.debugReturnSet('commitAll',self.getReturnSetValue(returnSet))
@@ -159,7 +161,7 @@ class GitCommitter:
         self.debugReturnSet('pushAll',self.getReturnSetValue(returnSet))
 
     def addCommitPushAll(self,sysCommandList):
-        commitMessage = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
+        commitMessage = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Commit message',sysCommandList)
         commandCommit = Command.COMMIT.replace(Command.TOKEN_COMMIT_MESSAGE,commitMessage)
         returnSet = self.runCommandList([
             Command.ADD,
@@ -169,8 +171,8 @@ class GitCommitter:
         self.debugReturnSet('addCommitPushAll',self.getReturnSetValue(returnSet))
 
     def addEnvironmentVariable(self,sysCommandList):
-        variableKey = sysCommandList[GitCommitter._1_ARGUMENT_INDEX]
-        variableValue = sysCommandList[GitCommitter._2_ARGUMENT_INDEX]
+        variableKey = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Environment variable key',sysCommandList)
+        variableValue = self.getArg(GitCommitter._2_ARGUMENT_INDEX,'Environment variable value',sysCommandList)
         globals = self.globals
         if variableKey == Command.KW_SELF :
             variableValue = f'{globals.localPath}{globals.apisRoot}{GitCommitter.__name__}{globals.BACK_SLASH}{globals.baseApiPath}'
@@ -190,10 +192,10 @@ class GitCommitter:
         gitCommiterCallCommand = sysCommandList[self.GIT_COMMITTER_INDEX]
         command = sysCommandList[self.COMMAND_INDEX]
         if globals.GIT_COMMITTER == gitCommiterCallCommand :
-            # try :
+            try :
                 self.commandSet[command](sysCommandList)
-            # except :
-                # print(f'{globals.ERROR}command not fount')
+            except :
+                print(f'{globals.ERROR}command not fount')
 
     def getProcessReturnValue(self,processReturn):
         return str(processReturn.stdout,self.globals.ENCODING)
@@ -221,3 +223,9 @@ class GitCommitter:
 
     def debugReturnSet(self,callMethodName,ReturnSetValue):
         self.globals.debug(f'{callMethodName}{2 * self.globals.NEW_LINE}{ReturnSetValue}')
+
+    def getArg(self,argIndex,typingGetMessage,sysCommandList) :
+        try :
+            return sysCommandList[argIndex]
+        except :
+            return input(f'{self.globals.COLON_SPACE}{typingGetMessage}')
