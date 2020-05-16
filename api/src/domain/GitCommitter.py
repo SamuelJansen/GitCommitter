@@ -44,6 +44,7 @@ KW_IF_DASH_NEEDED = 'if-needed'
 
 COMMAND_CLONE_ALL_IF_NEEDED = f'{Command.KW_CLONE}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
 COMMAND_CHECKOUT_B_ALL_IF_NEEDED = f'{Command.KW_CHECKOUT}-b-{KW_ALL}-{KW_IF_DASH_NEEDED}'
+COMMAND_PUSH_SET_UPSTREAM_ORIGIN_BRANCH_IF_NEEDED = f'{Command.KW_PUSH}-set-upstream-{Command.KW_ORIGIN}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
 
 COMMAND_STATUS_ALL = f'{Command.KW_STATUS}-{KW_ALL}'
 COMMAND_BRANCH_ALL = f'{Command.KW_BRANCH}-{KW_ALL}'
@@ -54,7 +55,6 @@ COMMAND_COMMIT_ALL = f'{Command.KW_COMMIT}-{KW_ALL}'
 COMMAND_PUSH_ALL = f'{Command.KW_PUSH}-{KW_ALL}'
 COMMAND_ADD_COMMIT_PUSH_ALL = f'{Command.KW_ADD}-{Command.KW_COMMIT}-{Command.KW_PUSH}-{KW_ALL}'
 COMMAND_MERGE_ORIGIN_ALL = f'{Command.KW_MERGE}-{Command.KW_ORIGIN}-{KW_ALL}'
-COMMAND_PUSH_SET_UPSTREAM_ORIGIN_BRANCH = f'{Command.KW_PUSH}-set-upstream-{Command.KW_ORIGIN}-{KW_ALL}'
 COMMAND_ADD_ENVIRONMENT_VARIABLE = f'add-environment-variable'
 
 COMMAND_SKIP = 'skip'
@@ -108,6 +108,7 @@ class GitCommitter:
 
             COMMAND_CLONE_ALL_IF_NEEDED : self.cloneAllIfNeeded,
             COMMAND_CHECKOUT_B_ALL_IF_NEEDED : self.checkoutBAllIfNeeded,
+            COMMAND_PUSH_SET_UPSTREAM_ORIGIN_BRANCH_IF_NEEDED : self.pushSetUpStreamAllIfNedded,
 
             COMMAND_STATUS_ALL : self.statusAll,
             COMMAND_BRANCH_ALL : self.branchAll,
@@ -117,8 +118,7 @@ class GitCommitter:
             COMMAND_COMMIT_ALL : self.commitAll,
             COMMAND_PUSH_ALL : self.pushAll,
             COMMAND_ADD_COMMIT_PUSH_ALL : self.addCommitPushAll,
-            COMMAND_MERGE_ORIGIN_ALL : self.mergeOriginAll,
-            COMMAND_PUSH_SET_UPSTREAM_ORIGIN_BRANCH : self.pushSetUpStreamAllIfNedded
+            COMMAND_MERGE_ORIGIN_ALL : self.mergeOriginAll
         }
 
     def cloneAllIfNeeded(self,sysCommandList):
