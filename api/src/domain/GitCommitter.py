@@ -84,8 +84,8 @@ class GitCommitter:
         self.GIT_COMMITTER = globals.GIT_COMMITTER
 
         self.globals = globals
-        self.gitUrl = globals.getSetting(f'{globals.apiName}.api.git.url')
-        self.gitExtension = globals.getSetting(f'{globals.apiName}.api.git.extension')
+        self.gitUrl = globals.getApiSetting(f'api.git.url')
+        self.gitExtension = globals.getApiSetting(f'api.git.extension')
         self.commandSet = {
             COMMAND_ADD_ENVIRONMENT_VARIABLE : self.addEnvironmentVariable,
 
@@ -226,6 +226,11 @@ class GitCommitter:
 
     def getArg(self,argIndex,typingGetMessage,sysCommandList) :
         try :
+            if '()' in sysCommandList[argIndex] :
+                return self.getImput(typingGetMessage)
             return sysCommandList[argIndex]
         except :
-            return input(f'{self.globals.COLON_SPACE}{typingGetMessage}')
+            return self.getImput(typingGetMessage)
+
+    def getImput(self,typingGetMessage):
+        return input(f'{typingGetMessage}{self.globals.COLON_SPACE}')
