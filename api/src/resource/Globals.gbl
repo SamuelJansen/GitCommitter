@@ -1,5 +1,5 @@
 Globals:
-    update-globals: False
+    update-globals: True
     print-status: False
     api:
         list: [GitCommitter,VoiceAssistant,SystemHelper]
