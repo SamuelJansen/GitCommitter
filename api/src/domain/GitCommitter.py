@@ -161,15 +161,15 @@ class GitCommitter:
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if Command.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandBranch = Command.BRANCH
-                                returnSet = self.runApiNameCommandListTree({apiName:[command]})
-                                print(f'returnSet = {returnSet}')
-                                print(f'===========================>>>>>> {self.getProcessReturnErrorValue(returnSet)}')
+                                returnCorrectionSet = self.runApiNameCommandListTree({apiName:[command]})
+                                print(f'returnCorrectionSet = {returnCorrectionSet}')
+                                print(f'===========================>>>>>> {self.getProcessReturnErrorValue(returnCorrectionSet)}')
                                 branchName = None
-                                for dirtyBranchName in self.getProcessReturnValue(returnSet).split(self.globals.NEW_LINE) :
+                                for dirtyBranchName in self.getProcessReturnValue(returnCorrectionSet).split(self.globals.NEW_LINE) :
                                     if '*' in dirtyBranchName :
                                         branchName = dirtyBranchName.split()[1].strip()
                                         commandPushSetUpStreamAll = Command.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(Command.TOKEN_BRANCH_NAME,branchName)
-                                        returnSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
+                                        returnCorrectionSet = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
