@@ -34,7 +34,7 @@ class Command:
     FETCH = f'{KW_GIT} {KW_FETCH}'
     MERGE = f'{KW_GIT} {KW_MERGE}'
     ORIGIN = f'{KW_GIT} {KW_ORIGIN}'
-    MERGE_ORIGIN = f'{KW_GIT} {KW_MERGE} {KW_ORIGIN}\\{TOKEN_BRANCH_NAME}'
+    MERGE_ORIGIN = f'{KW_GIT} {KW_MERGE} {KW_ORIGIN}/{TOKEN_BRANCH_NAME}'
 
 
 KW_ALL = 'all'
