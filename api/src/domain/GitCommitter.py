@@ -158,17 +158,18 @@ class GitCommitter:
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         print(f'=====>>>>>> {key} =====>>>> {self.getProcessReturnErrorValue(value)}')
-                        if Command.PUSH_SET_UPSTREAM_ORIGIN in self.getProcessReturnErrorValue(value) :
-                            commandBranch = Command.BRANCH
-                            print(f'returnSet[apiName][commandBranch] = {returnSet[apiName][commandBranch]}')
-                            returnSet[apiName][commandBranch] = self.runApiNameCommandListTree({apiName:[command]})
-                            print(f'===========================>>>>>> {self.getProcessReturnErrorValue(returnSet[apiName][commandBranch])}')
-                            branchName = None
-                            for dirtyBranchName in self.getProcessReturnValue(returnSet[apiName][commandBranch]).split(self.globals.NEW_LINE) :
-                                if '*' in dirtyBranchName :
-                                    branchName = dirtyBranchName.split()[1].strip()
-                                    commandPushSetUpStreamAll = Command.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(Command.TOKEN_BRANCH_NAME,branchName)
-                                    returnSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
+                        for line in self.getProcessReturnErrorValue(value).plit(self.globals.NEW_LINE) :
+                            if Command.PUSH_SET_UPSTREAM_ORIGIN in line :
+                                commandBranch = Command.BRANCH
+                                print(f'returnSet[apiName][commandBranch] = {returnSet[apiName][commandBranch]}')
+                                returnSet[apiName][commandBranch] = self.runApiNameCommandListTree({apiName:[command]})
+                                print(f'===========================>>>>>> {self.getProcessReturnErrorValue(returnSet[apiName][commandBranch])}')
+                                branchName = None
+                                for dirtyBranchName in self.getProcessReturnValue(returnSet[apiName][commandBranch]).split(self.globals.NEW_LINE) :
+                                    if '*' in dirtyBranchName :
+                                        branchName = dirtyBranchName.split()[1].strip()
+                                        commandPushSetUpStreamAll = Command.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(Command.TOKEN_BRANCH_NAME,branchName)
+                                        returnSet[apiName][commandPushSetUpStreamAll] = self.runApiNameCommandListTree({apiName:[commandPushSetUpStreamAll]})
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
