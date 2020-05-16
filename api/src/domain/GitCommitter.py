@@ -161,7 +161,7 @@ class GitCommitter:
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if Command.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandBranch = Command.BRANCH
-                                returnCorrectionSet = self.runApiNameCommandListTree({apiName:[command]})
+                                returnCorrectionSet = self.runApiNameCommandListTree({apiName:[commandBranch]})
                                 print(f'returnCorrectionSet = {returnCorrectionSet}')
                                 print(f'===========================>>>>>> {self.getProcessReturnErrorValue(returnCorrectionSet)}')
                                 branchName = None
