@@ -42,6 +42,19 @@ class GitCommitter:
 
     CONFIRM = ['execute']
 
+    def handleCommandList(self,sysCommandList):
+        globals = self.globals
+        if len(sysCommandList) < GitCommitter.COMMAND_INDEX :
+            print(f'{globals.ERROR}{GitCommitter.MISSING_SPACE}{globals.GITC_GIT_COMMITTER} command')
+            return
+        gitCommiterCallCommand = sysCommandList[GitCommitter.GIT_COMMITTER_INDEX]
+        command = sysCommandList[GitCommitter.COMMAND_INDEX]
+        if globals.GITC_GIT_COMMITTER == gitCommiterCallCommand :
+            try :
+                return self.commandSet[command](sysCommandList)
+            except Exception as exception :
+                print(f'''{globals.ERROR}Error processing command "{gitCommiterCallCommand} {command}": {str(exception)}''')
+
     def __init__(self,globals):
         self.globals = globals
         self.GIT_COMMITTER = globals.GITC_GIT_COMMITTER
@@ -236,19 +249,6 @@ class GitCommitter:
 
     def wakeUpVoiceAssistant(self,sysCommandList):
         WakeUpVoiceAssistant.run(self)
-
-    def handleCommandList(self,sysCommandList):
-        globals = self.globals
-        if len(sysCommandList) < GitCommitter.COMMAND_INDEX :
-            print(f'{globals.ERROR}{GitCommitter.MISSING_SPACE}{globals.GITC_GIT_COMMITTER} command')
-            return
-        gitCommiterCallCommand = sysCommandList[GitCommitter.GIT_COMMITTER_INDEX]
-        command = sysCommandList[GitCommitter.COMMAND_INDEX]
-        if globals.GITC_GIT_COMMITTER == gitCommiterCallCommand :
-            try :
-                self.commandSet[command](sysCommandList)
-            except Exception as exception :
-                print(f'''{globals.ERROR}Error processing command "{gitCommiterCallCommand} {command}": {str(exception)}''')
 
     def getProcessReturnValue(self,processReturn):
         return str(processReturn.stdout,self.globals.ENCODING)
