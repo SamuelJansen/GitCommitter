@@ -115,7 +115,7 @@ class GitCommitter:
                     print(self.getProcessReturnValue(returnSet[repositoryName][command]))
             except Exception as exception :
                 print(f'{self.globals.ERROR}{repositoryName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
-        return returnSet[repositoryName][command]
+        return returnSet
 
     def cloneRepositoryIfNeeded(self,sysCommandList):
         globals = self.globals
@@ -130,7 +130,9 @@ class GitCommitter:
         else :
             print(f'{repositoryName} already exists')
         if repositoryNameCommandListTree :
-            self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
+            returnSet = {}
+            returnSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
+            self.debugReturnSet('cloneAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def cloneAllIfNeeded(self,sysCommandList):
         globals = self.globals
@@ -145,8 +147,10 @@ class GitCommitter:
                     repositoryNameCommandListTree[repositoryName] = [command]
                 else :
                     print(f'{repositoryName} already exists')
+
             if repositoryNameCommandListTree :
-                self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
+                returnSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
+                self.debugReturnSet('cloneAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def checkoutBAllIfNeeded(self,sysCommandList):
         branchName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Branch name',sysCommandList)
