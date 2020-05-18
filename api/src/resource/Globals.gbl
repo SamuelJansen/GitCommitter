@@ -2,7 +2,7 @@ Globals:
     update-globals: True
     print-status: False
     api:
-        list: [GitCommitter,VoiceAssistant,SystemHelper]
+        list: [Globals,HelperGitCommitter,VoiceAssistant,SystemHelper]
         extension: yml
         dependency:
             update: true
