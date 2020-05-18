@@ -169,20 +169,25 @@ class GitCommitter:
 
     def pushSetUpStreamAllIfNedded(self,sysCommandList):
         returnSet = self.runCommandList([GitCommand.PUSH])
+        returnCorrectionSet = {}
         if returnSet and returnSet.items():
             for repositoryName,specificReturnSet in returnSet.items() :
+                returnCorrectionSet[repositoryName] = {}
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if GitCommand.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandPush = GitCommand.BRANCH
-                                returnCorrectionSet[repositoryName][command] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})
-                                returnedValue = self.getProcessReturnValue(returnCorrectionSet[repositoryName][command]).split(self.globals.NEW_LINE)
-                                if returnedValue :
-                                    if '*' in dirtyBranchName :
-                                        branchName = dirtyBranchName.split()[1].strip()
-                                        commandPushSetUpStreamAll = GitCommand.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
-                                        returnCorrectionSet[repositoryName][commandPushSetUpStreamAll] = self.runRepositoryNameCommandListTree({repositoryName:[commandPushSetUpStreamAll]})
+                                returnCorrectionSet[repositoryName][commandPush] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})[repositoryName][commandPush]
+                                print(returnCorrectionSet)
+                                dirtyBranchNameList = self.getProcessReturnValue(returnCorrectionSet[repositoryName][commandPush]).split(self.globals.NEW_LINE)
+                                print(dirtyBranchNameList)
+                                if dirtyBranchNameList :
+                                    for dirtyBranchName in dirtyBranchNameList :
+                                        if '*' in dirtyBranchName :
+                                            branchName = dirtyBranchName.split()[1].strip()
+                                            commandPushSetUpStreamAll = GitCommand.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
+                                            returnCorrectionSet[repositoryName][commandPushSetUpStreamAll] = self.runRepositoryNameCommandListTree({repositoryName:[commandPushSetUpStreamAll]})[repositoryName][commandPushSetUpStreamAll]
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
@@ -286,7 +291,8 @@ class GitCommitter:
             if '()' in sysCommandList[argIndex] :
                 return self.validInput(self.getImput(typingGetMessage))
             return sysCommandList[argIndex]
-        except :
+        except Exception as exception :
+            self.globals.debug(f'Not possible to get sysCommandList[{argIndex}]. Cause: {str(exception)}')
             return self.validInput(self.getImput(typingGetMessage))
 
     def validInput(self,input):
