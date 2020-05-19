@@ -178,10 +178,8 @@ class GitCommitter:
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if GitCommand.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandPush = GitCommand.BRANCH
-                                returnCorrectionSet[repositoryName][commandPush] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})[repositoryName][commandPush]
-                                print(returnCorrectionSet)
+                                returnCorrectionSet[repositoryName][commandPush] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})[repositoryName][commandPush]                
                                 dirtyBranchNameList = self.getProcessReturnValue(returnCorrectionSet[repositoryName][commandPush]).split(self.globals.NEW_LINE)
-                                print(dirtyBranchNameList)
                                 if dirtyBranchNameList :
                                     for dirtyBranchName in dirtyBranchNameList :
                                         if '*' in dirtyBranchName :
