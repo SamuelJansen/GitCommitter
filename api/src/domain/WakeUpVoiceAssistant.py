@@ -16,7 +16,7 @@ def run(gitCommitter) :
         content = voiceAssistant.listen()
         if content not in VoiceAssistant.SLEEP :
             if selectedCommand and content in gitCommitter.CONFIRM :
-                response = gitCommitter.handleCommandList([globals.GITC_GIT_COMMITTER,selectedCommand])
+                response = gitCommitter.handleCommandList([globals.GIT_COMMITTER,selectedCommand])
                 gitCommitterResponseList.append(response)
             else :
                 selectedCommand = None
@@ -30,7 +30,7 @@ def run(gitCommitter) :
                         gradedCommandSet[commandScore] = [command]
                 selectedSortedCommand = sorted(gradedCommandSet.items())
                 selectedCommand = selectedSortedCommand[0][1][0]
-                print(f'{globals.GITC_GIT_COMMITTER} {selectedCommand}')
+                print(f'{globals.GIT_COMMITTER} {selectedCommand}')
         elif content in VoiceAssistant.SLEEP :
             voiceAssistant.awake = False
     return gitCommitterResponseList
