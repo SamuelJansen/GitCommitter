@@ -17,7 +17,7 @@ class GitCommitter:
 
     KW_ALL = 'all'
     KW_IF_DASH_NEEDED = 'if-needed'
-    KW_REPOSITORY = 'repository'
+    KW_PROJECT = 'project'
 
     CLONE_ALL_IF_NEEDED = f'{GitCommand.KW_CLONE}-{KW_ALL}-{KW_IF_DASH_NEEDED}'
     CHECKOUT_B_ALL_IF_NEEDED = f'{GitCommand.KW_CHECKOUT}-b-{KW_ALL}-{KW_IF_DASH_NEEDED}'
@@ -33,7 +33,8 @@ class GitCommitter:
     ADD_COMMIT_PUSH_ALL = f'{GitCommand.KW_ADD}-{GitCommand.KW_COMMIT}-{GitCommand.KW_PUSH}-{KW_ALL}'
     MERGE_ORIGIN_ALL = f'{GitCommand.KW_MERGE}-{GitCommand.KW_ORIGIN}-{KW_ALL}'
 
-    CLONE_REPOSITORY_IF_NEEDED = f'{GitCommand.KW_CLONE}-{KW_REPOSITORY}-{KW_IF_DASH_NEEDED}'
+    CLONE_PROJECT_IF_NEEDED = f'{GitCommand.KW_CLONE}-{KW_PROJECT}-{KW_IF_DASH_NEEDED}'
+    ADD_COMMIT_PUSH_PROJECT = f'{GitCommand.KW_ADD}-{GitCommand.KW_COMMIT}-{GitCommand.KW_PUSH}-{KW_PROJECT}'
 
 
     ADD_ENVIRONMENT_VARIABLE = f'add-environment-variable'
@@ -77,7 +78,8 @@ class GitCommitter:
             GitCommitter.ADD_COMMIT_PUSH_ALL : self.addCommitPushAll,
             GitCommitter.MERGE_ORIGIN_ALL : self.mergeOriginAll,
 
-            GitCommitter.CLONE_REPOSITORY_IF_NEEDED : self.cloneRepositoryIfNeeded,
+            GitCommitter.CLONE_PROJECT_IF_NEEDED : self.cloneProjectIfNeeded,
+            GitCommitter.ADD_COMMIT_PUSH_PROJECT : self.addCommitPushProject,
 
             GitCommitter.ADD_ENVIRONMENT_VARIABLE : self.addEnvironmentVariable
         }
@@ -86,70 +88,82 @@ class GitCommitter:
     def runCommandList(self,commandList):
         globals = self.globals
         returnSet = {}
-        for repositoryName in globals.apiNameList :
+        for projectName in globals.apiNameList :
             try :
-                returnSet[repositoryName] = {}
+                returnSet[projectName] = {}
                 for command in commandList :
-                    print(f'{globals.NEW_LINE}[{repositoryName}] {command}')
-                    processPath = f'{globals.localPath}{globals.apisRoot}{repositoryName}'
-                    returnSet[repositoryName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
-                    print(self.getProcessReturnValue(returnSet[repositoryName][command]))
-                    # globals.debug(returnSet[repositoryName][command])
+                    print(f'{globals.NEW_LINE}[{projectName}] {command}')
+                    processPath = f'{globals.localPath}{globals.apisRoot}{projectName}'
+                    returnSet[projectName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    print(self.getProcessReturnValue(returnSet[projectName][command]))
+                    # globals.debug(returnSet[projectName][command])
             except Exception as exception :
-                print(f'{self.globals.ERROR}{repositoryName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
+                print(f'{self.globals.ERROR}{projectName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
-    def runRepositoryNameCommandListTree(self,repositoryNameCommandListTree,path=None):
+    def runCommandListTree(self,commandListTree,path=None):
         globals = self.globals
         returnSet = {}
-        for repositoryName,commandList in repositoryNameCommandListTree.items() :
+        for projectName,commandList in commandListTree.items() :
             try :
-                returnSet[repositoryName] = {}
+                returnSet[projectName] = {}
                 for command in commandList :
                     if path :
                         processPath = path
                     else :
-                        processPath = f'{globals.localPath}{globals.apisRoot}{repositoryName}'
-                    print(f'{globals.NEW_LINE}[{repositoryName}] {command} {processPath}')
-                    returnSet[repositoryName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
-                    print(self.getProcessReturnValue(returnSet[repositoryName][command]))
+                        processPath = f'{globals.localPath}{globals.apisRoot}{projectName}'
+                    print(f'{globals.NEW_LINE}[{projectName}] {command} {processPath}')
+                    returnSet[projectName][command] = subprocess.run(command,shell=True,capture_output=True,cwd=processPath)
+                    print(self.getProcessReturnValue(returnSet[projectName][command]))
             except Exception as exception :
-                print(f'{self.globals.ERROR}{repositoryName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
+                print(f'{self.globals.ERROR}{projectName}{globals.SPACE_DASH_SPACE}{command}{globals.NEW_LINE}{str(exception)}')
         return returnSet
 
-    def cloneRepositoryIfNeeded(self,sysCommandList):
+    def cloneProjectIfNeeded(self,sysCommandList):
         globals = self.globals
-        repositoryName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Repository name',sysCommandList)
-        repositoryNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
-        repositoryNameCommandListTree = {}
-        if not repositoryNameList or repositoryName not in repositoryNameList :
-            repositoryUrl = f'{self.gitUrl}{repositoryName}.{self.gitExtension}'
-            command = GitCommand.CLONE.replace(GitCommand.TOKEN_REPOSITORY_URL,repositoryUrl)
+        projectName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Project name',sysCommandList)
+        projectNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
+        commandListTree = {}
+        if not projectNameList or projectName not in projectNameList :
+            projectUrl = f'{self.gitUrl}{projectName}.{self.gitExtension}'
+            command = GitCommand.CLONE.replace(GitCommand.TOKEN_PROJECT_URL,projectUrl)
             processPath = f'{globals.localPath}{globals.apisRoot}'
-            repositoryNameCommandListTree[repositoryName] = [command]
+            commandListTree[projectName] = [command]
         else :
-            print(f'{repositoryName} already exists')
-        if repositoryNameCommandListTree :
+            print(f'{projectName} already exists')
+        if commandListTree :
             returnSet = {}
-            returnSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
-            self.debugReturnSet('cloneAllIfNeeded',self.getReturnSetValue(returnSet))
+            returnSet = self.runCommandListTree(commandListTree,path=processPath)
+            self.debugReturnSet('cloneProjectIfNeeded',self.getReturnSetValue(returnSet))
+
+    def addCommitPushProject(self,sysCommandList):
+        projectName = self.getArg(GitCommitter._1_ARGUMENT_INDEX,'Project name',sysCommandList)
+        commitMessage = self.getArg(GitCommitter._2_ARGUMENT_INDEX,'CommitMessage name',sysCommandList)
+        if projectName :
+            commandCommit = GitCommand.COMMIT.replace(GitCommand.TOKEN_COMMIT_MESSAGE,commitMessage)
+            returnSet = self.runCommandListTree({projectName:[
+                GitCommand.ADD,
+                commandCommit,
+                GitCommand.PUSH
+            ]})
+            self.debugReturnSet('addCommitPushProject',self.getReturnSetValue(returnSet))
 
     def cloneAllIfNeeded(self,sysCommandList):
         globals = self.globals
-        repositoryNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
-        if repositoryNameList :
-            repositoryNameCommandListTree = {}
-            for repositoryName in globals.apiNameList :
-                if repositoryName not in repositoryNameList :
-                    repositoryUrl = f'{self.gitUrl}{repositoryName}.{self.gitExtension}'
-                    command = GitCommand.CLONE.replace(GitCommand.TOKEN_REPOSITORY_URL,repositoryUrl)
+        projectNameList = list(globals.getPathTreeFromPath(f'{globals.localPath}{globals.apisRoot}').keys())
+        if projectNameList :
+            commandListTree = {}
+            for projectName in globals.apiNameList :
+                if projectName not in projectNameList :
+                    projectUrl = f'{self.gitUrl}{projectName}.{self.gitExtension}'
+                    command = GitCommand.CLONE.replace(GitCommand.TOKEN_PROJECT_URL,projectUrl)
                     processPath = f'{globals.localPath}{globals.apisRoot}'
-                    repositoryNameCommandListTree[repositoryName] = [command]
+                    commandListTree[projectName] = [command]
                 else :
-                    print(f'{repositoryName} already exists')
+                    print(f'{projectName} already exists')
 
-            if repositoryNameCommandListTree :
-                returnSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree,path=processPath)
+            if commandListTree :
+                returnSet = self.runCommandListTree(commandListTree,path=processPath)
                 self.debugReturnSet('cloneAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def checkoutBAllIfNeeded(self,sysCommandList):
@@ -158,34 +172,34 @@ class GitCommitter:
             commandCheckoutAll = GitCommand.CHECKOUT.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
             returnSet = self.runCommandList([commandCheckoutAll])
             if returnSet and returnSet.items():
-                for repositoryName,specificReturnSet in returnSet.items() :
+                for projectName,specificReturnSet in returnSet.items() :
                     if specificReturnSet and specificReturnSet.items() :
                         for key,value in specificReturnSet.items() :
                             if 'error' in self.getProcessReturnErrorValue(value) :
                                 command = GitCommand.CHECKOUT_DASH_B.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
-                                repositoryNameCommandListTree = {repositoryName:[command]}
-                                returnCorrectionSet = self.runRepositoryNameCommandListTree(repositoryNameCommandListTree)
+                                commandListTree = {projectName:[command]}
+                                returnCorrectionSet = self.runCommandListTree(commandListTree)
             self.debugReturnSet('checkoutBAllIfNeeded',self.getReturnSetValue(returnSet))
 
     def pushSetUpStreamAllIfNedded(self,sysCommandList):
         returnSet = self.runCommandList([GitCommand.PUSH])
         returnCorrectionSet = {}
         if returnSet and returnSet.items():
-            for repositoryName,specificReturnSet in returnSet.items() :
-                returnCorrectionSet[repositoryName] = {}
+            for projectName,specificReturnSet in returnSet.items() :
+                returnCorrectionSet[projectName] = {}
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         for line in self.getProcessReturnErrorValue(value).split(self.globals.NEW_LINE) :
                             if GitCommand.PUSH_SET_UPSTREAM_ORIGIN in line :
                                 commandPush = GitCommand.BRANCH
-                                returnCorrectionSet[repositoryName][commandPush] = self.runRepositoryNameCommandListTree({repositoryName:[commandPush]})[repositoryName][commandPush]                
-                                dirtyBranchNameList = self.getProcessReturnValue(returnCorrectionSet[repositoryName][commandPush]).split(self.globals.NEW_LINE)
+                                returnCorrectionSet[projectName][commandPush] = self.runCommandListTree({projectName:[commandPush]})[projectName][commandPush]
+                                dirtyBranchNameList = self.getProcessReturnValue(returnCorrectionSet[projectName][commandPush]).split(self.globals.NEW_LINE)
                                 if dirtyBranchNameList :
                                     for dirtyBranchName in dirtyBranchNameList :
                                         if '*' in dirtyBranchName :
                                             branchName = dirtyBranchName.split()[1].strip()
                                             commandPushSetUpStreamAll = GitCommand.PUSH_SET_UPSTREAM_ORIGIN_BRANCH.replace(GitCommand.TOKEN_BRANCH_NAME,branchName)
-                                            returnCorrectionSet[repositoryName][commandPushSetUpStreamAll] = self.runRepositoryNameCommandListTree({repositoryName:[commandPushSetUpStreamAll]})[repositoryName][commandPushSetUpStreamAll]
+                                            returnCorrectionSet[projectName][commandPushSetUpStreamAll] = self.runCommandListTree({projectName:[commandPushSetUpStreamAll]})[projectName][commandPushSetUpStreamAll]
         self.debugReturnSet('pushSetUpStreamAllIfNedded',self.getReturnSetValue(returnSet))
 
     def statusAll(self,sysCommandList):
@@ -267,14 +281,14 @@ class GitCommitter:
         globals = self.globals
         returnValue = globals.NOTHING
         if returnSet and returnSet.items():
-            for repositoryName,specificReturnSet in returnSet.items() :
+            for projectName,specificReturnSet in returnSet.items() :
                 if specificReturnSet and specificReturnSet.items() :
                     for key,value in specificReturnSet.items() :
                         processReturnValue = self.getProcessReturnValue(value)
                         if processReturnValue and not globals.NOTHING == processReturnValue :
-                            returnValue += f'{repositoryName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{processReturnValue}'
+                            returnValue += f'{projectName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{processReturnValue}'
                         else :
-                            returnValue += f'{repositoryName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{self.getProcessReturnErrorValue(value)}'
+                            returnValue += f'{projectName}{globals.SPACE_DASH_SPACE}{key}{globals.NEW_LINE}{self.getProcessReturnErrorValue(value)}'
                     returnValue += globals.NEW_LINE
         return returnValue
 
