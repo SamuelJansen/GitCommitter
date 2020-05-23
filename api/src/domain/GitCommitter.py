@@ -83,7 +83,6 @@ class GitCommitter:
 
             GitCommitter.ADD_ENVIRONMENT_VARIABLE : self.addEnvironmentVariable
         }
-        self.voiceAssistant = VoiceAssistant.VoiceAssistant(self.globals)
 
     def runCommandList(self,commandList):
         globals = self.globals
@@ -269,6 +268,7 @@ class GitCommitter:
             os.environ[variableKey] = variableValue
 
     def wakeUpVoiceAssistant(self,sysCommandList):
+        self.voiceAssistant = VoiceAssistant.VoiceAssistant(self.globals)
         WakeUpVoiceAssistant.run(self)
 
     def getProcessReturnValue(self,processReturn):
